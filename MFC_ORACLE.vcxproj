@@ -184,6 +184,7 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClInclude Include="CHospitalDialog.h" />
+    <ClInclude Include="CHospitalFindDlg.h" />
     <ClInclude Include="framework.h" />
     <ClInclude Include="hospital.h" />
     <ClInclude Include="MainFrm.h" />
@@ -196,6 +197,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="CHospitalDialog.cpp" />
+    <ClCompile Include="CHospitalFindDlg.cpp" />
     <ClCompile Include="MainFrm.cpp" />
     <ClCompile Include="MFC_ORACLE.cpp" />
     <ClCompile Include="MFC_ORACLEDoc.cpp" />
