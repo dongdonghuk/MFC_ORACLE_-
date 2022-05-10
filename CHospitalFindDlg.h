@@ -21,7 +21,6 @@ protected:
 
 	DECLARE_MESSAGE_MAP()
 public:
-	afx_msg void OnEnChangeSearchName();
 	CString m_strHName;
 	CString m_strCallNum;
 };

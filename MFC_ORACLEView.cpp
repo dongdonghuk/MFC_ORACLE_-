@@ -17,6 +17,7 @@
 #ifdef _DEBUG
 #define new DEBUG_NEW
 #endif
+#include "CHospitalFindDlg.h"
 
 
 // CMFCORACLEView
@@ -147,6 +148,76 @@ CString GetHospitalInsertNo(CDatabase& db)
 	return strNo;
 
 }
+
+
+vector<CHospitalPtr> GetListHospitalFind(CDatabase& db, CString strHName, CString strCallNum)
+{
+	vector<CHospitalPtr> resultList;
+
+	//1. 검색 SQL 구문 생성
+	CString strSQL;
+
+	strSQL.Format(_T("select \
+		a.번호,\
+		a.인허가일자,\
+		b.영업상태명,\
+		a.상세영업상태코드,\
+		a.상세영업상태명,\
+		a.소재지전화,\
+		a.도로명전체주소,\
+		a.도로명우편번호,\
+		a.사업장명,\
+		a.업태구분명,\
+		a.의료기관종별명,\
+		a.의료인수,\
+		a.입원실수,\
+		a.병상수,\
+		a.진료과목내용명\
+		from 병원 a, 병원영업상태 b\
+		where a.영업상태명 = b.영업상태값\
+			and a.사업장명 like '%s%%'\
+		    and a.소재지전화 like '%s%%'\
+		"), strHName.GetBuffer()
+		, strCallNum.GetBuffer());
+
+	CRecordset rs(&db);
+
+	rs.Open(CRecordset::forwardOnly, strSQL.GetBuffer());
+
+	//3. SQL 구문 실행 결과 얻기 
+	while (!rs.IsEOF()) {
+		//스마트 포인터를 이용하여 객체생성함
+		CHospitalPtr pHospital = make_shared<CHospital>();
+
+		if (pHospital == nullptr) return vector<CHospitalPtr>();
+
+		rs.GetFieldValue((short)0, pHospital->strNo);
+		rs.GetFieldValue((short)1, pHospital->strDate);
+		rs.GetFieldValue((short)2, pHospital->strSName);
+		rs.GetFieldValue((short)3, pHospital->strDetailCode);
+		rs.GetFieldValue((short)4, pHospital->strDetailStatus);
+		rs.GetFieldValue((short)5, pHospital->strCallNum);
+		rs.GetFieldValue((short)6, pHospital->strAderss);
+		rs.GetFieldValue((short)7, pHospital->strZipCode);
+		rs.GetFieldValue((short)8, pHospital->strHName);
+		rs.GetFieldValue((short)9, pHospital->strCol1);
+		rs.GetFieldValue((short)10, pHospital->strCol2);
+		rs.GetFieldValue((short)11, pHospital->strDoctorNum);
+		rs.GetFieldValue((short)12, pHospital->strRoomNum);
+		rs.GetFieldValue((short)13, pHospital->strBedNum);
+		rs.GetFieldValue((short)14, pHospital->strMedicalClass);
+
+		rs.MoveNext();
+
+		//배열에 스마트 포인터 객체를 추가한다 
+		resultList.push_back(pHospital);
+	}
+	rs.Close();
+
+	return resultList;
+}
+
+
 
 
 BOOL InsertHospital(CDatabase& db, CHospitalPtr pHospital)
@@ -313,6 +384,7 @@ BEGIN_MESSAGE_MAP(CMFCORACLEView, CFormView)
 	ON_BN_CLICKED(IDC_BUTTON3, &CMFCORACLEView::OnBnClickedButton3)
 	ON_BN_CLICKED(IDC_BUTTON_REVISE, &CMFCORACLEView::OnBnClickedButtonRevise)
 	ON_BN_CLICKED(IDC_BUTTON_INSERT, &CMFCORACLEView::OnBnClickedButtonInsert)
+	ON_BN_CLICKED(IDC_BUTTON_SEARCH, &CMFCORACLEView::OnBnClickedButtonSearch)
 END_MESSAGE_MAP()
 
 // CMFCORACLEView 생성/소멸
@@ -370,12 +442,12 @@ void CMFCORACLEView::SetHospitalListView(int nRow, const CHospitalPtr pHospital)
 }
 
 
-void CMFCORACLEView::GetDBAllHospitalListView()
+void CMFCORACLEView::GetDBAllHospitalListView(vector<CHospitalPtr> hospitalList)
 {
 	m_listView.DeleteAllItems();
 
 	//사원 전체 목록을 얻는다
-	vector<CHospitalPtr> hospitalList = GetListHospital(m_db);
+	//vector<CHospitalPtr> hospitalList = GetListHospital(m_db);
 
 	//3. SQL 구문 실행 결과 얻기 
 	int nRow = 0;
@@ -387,72 +459,6 @@ void CMFCORACLEView::GetDBAllHospitalListView()
 	}
 }
 
-vector<CHospitalPtr> GetListHospitalFind(CDatabase& db, CString strHName, CString strCallNum)
-{
-	vector<CHospitalPtr> resultList;
-
-	//1. 검색 SQL 구문 생성
-	CString strSQL;
-
-	strSQL.Format(_T("select \
-		a.번호,\
-		TO_CHAR(TO_DATE(a.인허가일자, 'YYYYMMDD'), 'DD/MM/YYYY'),\
-		b.영업상태명,\
-		a.상세영업상태코드,\
-		a.상세영업상태명,\
-		a.소재지전화,\
-		a.도로명전체주소,\
-		a.도로명우편번호,\
-		a.사업장명,\
-		a.업태구분명,\
-		a.의료기관종별명,\
-		a.의료인수,\
-		a.입원실수,\
-		a.병상수,\
-		a.진료과목내용명\
-		from 병원 a, 병원영업상태 b\
-		where a.영업상태명 = b.영업상태값\
-			and a.사업장명 like '%s%%'\
-		    and a.소재지전화 like '%s%%'\
-		"), strHName.GetBuffer()
-		, strCallNum.GetBuffer());
-
-	CRecordset rs(&db);
-
-	rs.Open(CRecordset::forwardOnly, strSQL.GetBuffer());
-
-	//3. SQL 구문 실행 결과 얻기 
-	while (!rs.IsEOF()) {
-		//스마트 포인터를 이용하여 객체생성함
-		CHospitalPtr pHospital = make_shared<CHospital>();
-
-		if (pHospital == nullptr) return vector<CHospitalPtr>();
-
-		rs.GetFieldValue((short)0, pHospital->strNo);
-		rs.GetFieldValue((short)1, pHospital->strDate);
-		rs.GetFieldValue((short)2, pHospital->strSName);
-		rs.GetFieldValue((short)3, pHospital->strDetailCode);
-		rs.GetFieldValue((short)4, pHospital->strDetailStatus);
-		rs.GetFieldValue((short)5, pHospital->strCallNum);
-		rs.GetFieldValue((short)6, pHospital->strAderss);
-		rs.GetFieldValue((short)7, pHospital->strZipCode);
-		rs.GetFieldValue((short)8, pHospital->strHName);
-		rs.GetFieldValue((short)9, pHospital->strCol1);
-		rs.GetFieldValue((short)10, pHospital->strCol2);
-		rs.GetFieldValue((short)11, pHospital->strDoctorNum);
-		rs.GetFieldValue((short)12, pHospital->strRoomNum);
-		rs.GetFieldValue((short)13, pHospital->strBedNum);
-		rs.GetFieldValue((short)14, pHospital->strMedicalClass);
-
-		rs.MoveNext();
-
-		//배열에 스마트 포인터 객체를 추가한다 
-		resultList.push_back(pHospital);
-	}
-	rs.Close();
-
-	return resultList;
-}
 
 
 
@@ -502,7 +508,7 @@ void CMFCORACLEView::OnInitialUpdate()
 	CRecordSet 클래스는 SQL 구문을 실행하고 결과 집합을 관리하는 클래스
 
 	*/
-	GetDBAllHospitalListView();
+	GetDBAllHospitalListView(GetListHospital(m_db));
 
 }
 
@@ -716,4 +722,15 @@ void CMFCORACLEView::OnBnClickedButtonInsert()
 
 	}
 
+}
+
+
+void CMFCORACLEView::OnBnClickedButtonSearch()
+{
+	// TODO: 여기에 컨트롤 알림 처리기 코드를 추가합니다.
+
+	CHospitalFindDlg dlg;
+	if (dlg.DoModal() == IDOK) {
+		GetDBAllHospitalListView(GetListHospitalFind(m_db, dlg.m_strHName, dlg.m_strCallNum));
+	}
 }

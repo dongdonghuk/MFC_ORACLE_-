@@ -32,7 +32,6 @@ void CHospitalFindDlg::DoDataExchange(CDataExchange* pDX)
 
 
 BEGIN_MESSAGE_MAP(CHospitalFindDlg, CDialogEx)
-	ON_EN_CHANGE(IDC_SEARCH_NAME, &CHospitalFindDlg::OnEnChangeSearchName)
 END_MESSAGE_MAP()
 
 

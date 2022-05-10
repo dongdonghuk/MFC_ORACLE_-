@@ -56,11 +56,11 @@ public:
 	CImageList  m_imageList;
 	CImageList 	m_imageListSmall;
 
-	void GetDBAllHospitalListView();
+	void GetDBAllHospitalListView(vector<CHospitalPtr> hospitalList);
 	void SetHospitalListView(int nRow, const CHospitalPtr pHospital);
 
 
-
+	afx_msg void OnBnClickedButtonSearch();
 	afx_msg void OnBnClickedButton3();
 	afx_msg void OnBnClickedButtonRevise();
 	afx_msg void OnBnClickedButtonInsert();
