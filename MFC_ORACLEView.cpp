@@ -568,36 +568,33 @@ void CMFCORACLEView::OnBnClickedButton3()
 	const int nCount = m_listView.GetItemCount();
 	CString strEmpNo;
 	CString strSQL;
+	CString strSQL2;
 
 	CString strInParam;
 	CArray<int, int> arr;
 
 	for (int i = nCount - 1; i >= 0; --i) {
 		if (m_listView.GetCheck(i)) {
-			//삭제할 사원 번호를 얻는다
 			strEmpNo = m_listView.GetItemText(i, 0);
-
 			strInParam += strEmpNo + _T(",");
-
-			//삭제할 사원의 위치를 배열에 추가 한다 
 			arr.Add(i);
 		}
 	}
 
 	try {
 		if (!strInParam.IsEmpty()) {
-			//뒤에 있는 (,) 삭제 한다
 			strInParam.Delete(strInParam.GetLength() - 1, 1);
-			//SQL 삭제 구문을 생성한다 
-//				strSQL.Format(_T("delete from emp where empno in (%s)"), strInParam.GetBuffer());
+
 			strSQL = _T("delete from 병원 where 번호 in (") + strInParam + _T(")");
-			//삭제 SQL을 실행한다
-			//AfxMessageBox(strSQL);
+			
+			strSQL2 = _T("delete from 병원진료과목목록 where 번호 in (") + strInParam + _T(")");
+
 
 			//트랜젝션 시작 //DML
 			m_db.BeginTrans();
 
-			m_db.ExecuteSQL(strSQL);//DML 구문 (insert, delete ,update, merge)
+			m_db.ExecuteSQL(strSQL);
+			m_db.ExecuteSQL(strSQL2);
 
 			//트랜젝션 완료 //DML
 			m_db.CommitTrans();
